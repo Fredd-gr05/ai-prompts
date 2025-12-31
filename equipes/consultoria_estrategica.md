@@ -88,7 +88,7 @@ Empresas buscam consultoria estratégica mas enfrentam:
 
 **Inteligência de Mercado:**
 - Pesquisa de Mercado
-- Personas de Clientes (3-5 perfis detalhados)
+- Personas de Clientes (20-50 perfis detalhados)
 - Análise Competitiva
 
 **Data & Analytics:**
