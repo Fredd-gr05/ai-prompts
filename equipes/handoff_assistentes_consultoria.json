@@ -1,0 +1,80 @@
+{
+  "handoff_metadata": {
+    "versao_template": "1.0",
+    "tipo": "handoff_entre_assistentes",
+    "contexto_geral": "Consultoria empresarial atuando em ideacao, validacao, expansao e reestruturacao de negocios."
+  },
+  "contexto_consultoria": {
+    "descricao": "Consultoria empresarial que trabalha com negocios em diferentes fases: ideia inicial e validacao, expansao de negocios ja existentes e reestruturacao/turnaround.",
+    "conhecimento_do_usuario": "Usuario/consultor com bom conhecimento em gestao, estrategia e metodologias (SWOT, Canvas, plano de negocios, gestao de riscos etc.)."
+  },
+  "objetivo_handoff": {
+    "descricao": "Fornecer a outro assistente todo o contexto ja definido para que ele possa continuar a desenhar e aprimorar a equipe de agentes/assistentes para a consultoria, sem repetir o briefing inicial."
+  },
+  "briefing_resumido": {
+    "proposito_consultoria": {
+      "descricao": "Construir e usar uma equipe de assistentes de IA para apoiar todas as fases do ciclo de negocio: tirando ideias do papel, validando modelos, apoiando expansao e reestruturacao.",
+      "entregaveis_gerais": [
+        "Apoiar decisao estrategica ao longo de todo o ciclo do negocio.",
+        "Gerar documentos integrados e reutilizaveis para cada empresa-cliente."
+      ]
+    },
+    "publico_alvo_dos_documentos": {
+      "interno": "Equipe interna de consultoria, que utiliza os documentos como referencia, framework e guia de execucao.",
+      "externo": "Socios e diretores das empresas-cliente, que recebem versoes executivas para decisao e versoes tecnicas detalhadas."
+    },
+    "capacidades_principais_desejadas": {
+      "documentos_chave": [
+        "Plano executivo",
+        "Plano de negocios",
+        "Analise SWOT",
+        "Mapa de Oportunidades SEBRAE (Individuo + Mercado + Negocio)",
+        "Matriz de Analise de Risco (macro e micro, alinhada a ISO 31000 e COSO)",
+        "Canvas de Modelo de Negocios"
+      ],
+      "analises_e_pesquisas": [
+        "Criar pesquisas de mercado (questionarios, roteiros de entrevistas, surveys).",
+        "Criar personas baseadas no publico do negocio.",
+        "Simular respostas de mercado usando personas.",
+        "Considerar particularidades por tipo de negocio (industria, comercio, servicos, tecnologia), quando relevante."
+      ],
+      "tipos_de_assistente": [
+        "Assistentes que executam analises e geram documentos prontos.",
+        "Assistentes que guiam o consultor com perguntas, checklists e estruturas de raciocinio."
+      ]
+    },
+    "constraints_e_processos": {
+      "integracao_documentos": "Os documentos devem ser pensados como um sistema integrado, em que um complementa o outro.",
+      "dependencias": "A ordem de criacao importa: alguns documentos dependem de insumos dos anteriores (por exemplo: visao/escopo -> Canvas -> SWOT -> matriz de riscos -> plano executivo -> plano de negocios).",
+      "assistente_orquestrador": "Deve existir (ou sera criado) um assistente especializado em definir a ordem logica, entradas e saidas de cada documento ao longo do processo.",
+      "prioridade_documentos": "A prioridade exata de cada documento (quais sao mais urgentes) sera discutida e definida ao longo do processo, nao de forma fixa e unica.",
+      "linguagem": "Tom tecnico, direto e objetivo, evitando explicacoes basicas demais."
+    },
+    "tom_de_comunicacao": {
+      "caracteristicas": [
+        "Estilo de consultor experiente.",
+        "Foco em decisao e aplicacao pratica.",
+        "Capacidade de alternar entre visao executiva (resumo) e detalhamento tecnico quando solicitado.",
+        "Evitar excesso de formalismo academico."
+      ]
+    }
+  },
+  "orientacao_para_novo_assistente": {
+    "nao_repetir": {
+      "itens_ja_definidos": [
+        "Proposito da consultoria.",
+        "Publico-alvo dos documentos.",
+        "Capacidades principais desejadas.",
+        "Constraints gerais de processo.",
+        "Tom de comunicacao desejado."
+      ],
+      "instrucoes": "Assuma que todo o briefing basico ja esta fechado. Nao refaca essas perguntas."
+    },
+    "foco_esperado": {
+      "arquitetura_de_agentes": "Aprofundar o desenho da equipe de assistentes (quem executa, quem guia, especializacao por fase do negocio, uso de filtros setoriais etc.).",
+      "fluxos_de_documentos": "Propor ordem, dependencias e responsabilidades de cada assistente na geracao de documentos (do diagnostico inicial ate o plano de negocios completo).",
+      "estruturas_de_prompts": "Sugerir estruturas internas de prompts e padroes de saida (modelos de relatorios, secoes padrao, campos obrigatorios).",
+      "identificacao_de_gaps": "Apontar pontos ainda nao detalhados (por exemplo: templates de relatorios, metricas-chave por setor, convencoes de nomeacao)."
+    }
+  }
+}
