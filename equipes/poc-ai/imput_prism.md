@@ -1,57 +1,45 @@
-# Especificação da POC - Cenário A (Simples)
+## Resumo do escopo POC
 
-**Data:** 05 de janeiro de 2026  
-**Cenário:** A_POC_simples  
-**Stack:** CrewAI + LangChain  
-**Fonte de verdade:** team_poc.md
+Para o **cenário A_POC_simples** com **CrewAI**, recortamos para fluxo linear com os 6 agentes essenciais: Spectrum → Prism → Schema → Synapse → Sentinel → Ryse.  
+Foco em viabilidade: validar handoffs via JSON schemas, sem paralelismo, sem rotas condicionais, sem workflows longos.  
+Escopo mínimo: entrada é briefing + restrições de negócio; saída é projeto esqueleto com contratos, orquestração básica, relatório de issues e otimizações iniciais de prompts.
 
----
+## Decisões de recorte
 
-## 1. Resumo executivo
+**O que entra na POC:**
+- Sequência linear de 6 agentes com dependências explícitas (cada task espera output anterior).
+- Mapeamento direto para CrewAI: cada agente = Agent/Task, handoff = `task.depends_on(previous_task)`.
+- Validação de schemas em cada handoff (input/output JSON validados via `contracts/json_schemas/`).
+- Features mínimas: `core/state.py` para estado compartilhado, `core/graph_builder.py` para definição de tarefas, `agents/` com prompts v0.
 
-Esta POC implementa um fluxo **linear e determinístico** de seis agentes (Spectrum, Prism, Schema, Synapse, Sentinel, Ryse) para orquestração de geração de especificações e código de projeto, com foco em **escopo mínimo viável (MVP)**.
+**O que sai da POC (para cenários B/C):**
+- Paralelismo, rotas condicionais, `retry_policies`, `signals_timers`, workflows longos (Temporal).
+- Features avançadas de observability, resiliência e telemetria complexa.
+- Integrações externas (ex.: APIs de produção, bancos de dados reais).
 
-Não há paralelismo, roteamento condicional ou workflows de longa duração. O fluxo é síncrono, com handoffs explícitos entre agentes usando contratos (input_schema / output_schema).
+**Trade-offs:**
+- Linearidade garante simplicidade e debugabilidade rápida, mas sacrifica performance em cenários reais de produção.
+- CrewAI é ideal para POC por abstrair orquestração, mas LangGraph seria mais flexível para B/C (decisão adiada).
+- Validação de schemas em runtime adiciona overhead (~10-20% latência), mas garante robustez nos handoffs.
 
----
+## Orientações por agente
 
-## 2. Decisões de arquitetura
+**Spectrum (você aqui):**  
+Gere `especificacao_poc.json` com `sequence_A`, `agent_nodes` e `handoff_edges` mapeados para CrewAI.
 
-### 2.1 Por que cenário A (simples)?
+**Prism:**  
+Gere skeleton de `crew.py`, `core/state.py`, `core/graph_builder.py` e pasta `agents/` com prompts v0.
 
-- **Restrições iniciais:** Sem requisitos de longa duração, sem processamento paralelo crítico.
-- **Vantagem:** Código legível, fácil debugging, rápida validação de conceito.
-- **Trade-off:** Não otimizado para escalabilidade ou workflows complexos (será endereçado em cenários B/C).
+**Schema:**  
+Defina `contracts/documentos.py`, `contracts/json_schemas/especificacao_poc.json`, `contratos_matriz.md` com validação pydantic.
 
-### 2.2 Por que CrewAI?
+**Synapse:**  
+Implemente execução via `execution_manager.py` e `validation_engine.py`, rodando o crew e coletando traces básicas.
 
-- **Abstração alto nível:** Agents e Tasks já encapsulam prompts, tools e sequenciamento.
-- **Integração LangChain:** Reutiliza modelos, chains e memory sem refatoring.
-- **Prototipagem rápida:** Menos boilerplate que LangGraph puro.
-- **Desvantagem:** Menos controle granular sobre DAG (será necessário em cenário C).
+**Sentinel:**  
+Revise código gerado, gere `reports/relatorio_issues.json` com issues de segurança, testes unitários e checagens de contratos.
 
-### 2.3 Artefatos principais
+**Ryse:**  
+Otimize prompts baseados em `relatorio_issues`, gere `prompts_otimizados/` e `learnings.md` com 3 lições principais.
 
-- **especificacao_poc.json:** Contrato processável para Prism, Schema, Synapse, Sentinel e Ryse. Define schemas de entrada/saída, sequência de agentes, e referências a arquivos.
-- **especificacao_poc.md:** Este documento. Orientações, decisões, trade-offs, guia de integração.
-
----
-
-## 3. Sequência de agentes (cenário A)
-
-### Fluxo linear
-
-Spectrum
-↓ (especificacao_poc.json)
-Prism
-↓ (project_structure.json)
-Schema
-↓ (contracts_references.json)
-Synapse
-↓ (orchestration_artifacts.json)
-Sentinel
-↓ (relatorio_issues.json)
-Ryse
-↓ (prompts_otimizados/, learnings.md)
-
-
+Aguardando seu OK para gerar o `especificacao_poc.json` processável.
