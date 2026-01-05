@@ -1,0 +1,150 @@
+{
+  "meta": {
+    "versao": "0.1",
+    "projeto": "Equipe de Consultoria Estrategica Data-Driven - POC",
+    "foco_poc": "Fluxo minimo da imersao ao plano executivo, sem camada de dados avancada",
+    "linguagem": "pt-BR"
+  },
+  "agentes": [
+    {
+      "id": "theron",
+      "nome": "Theron",
+      "camada": "foundation",
+      "papel": "imersao_contexto_objetivos",
+      "inputs": ["briefing_livre_cliente"],
+      "outputs": ["relatorio_imersao_v0"],
+      "contratos_output": ["relatorio_imersao_v0"]
+    },
+    {
+      "id": "lyric",
+      "nome": "Lyric",
+      "camada": "foundation",
+      "papel": "diagnostico_preliminar",
+      "inputs": ["relatorio_imersao_v0", "documentos_cliente_opcionais"],
+      "outputs": ["pacote_diagnostico_v0"],
+      "contratos_output": ["pacote_diagnostico_v0"]
+    },
+    {
+      "id": "stratos",
+      "nome": "Stratos",
+      "camada": "foundation",
+      "papel": "orquestrador_poc",
+      "inputs": ["relatorio_imersao_v0", "pacote_diagnostico_v0"],
+      "outputs": ["roadmap_poc_unico"],
+      "contratos_output": ["roadmap_poc_unico"],
+      "config_poc": {
+        "fluxo_padrao": [
+          "theron",
+          "lyric",
+          "nexis",
+          "scout",
+          "shield",
+          "synthesis",
+          "scribe"
+        ]
+      }
+    },
+    {
+      "id": "nexis",
+      "nome": "Nexis",
+      "camada": "core",
+      "papel": "canvas_modelo_negocio",
+      "inputs": ["pacote_diagnostico_v0"],
+      "outputs": ["canvas_v0"],
+      "contratos_output": ["canvas_v0"]
+    },
+    {
+      "id": "scout",
+      "nome": "Scout",
+      "camada": "core",
+      "papel": "mercado_personas",
+      "inputs": ["pacote_diagnostico_v0"],
+      "outputs": ["personas_v0", "analise_mercado_v0", "mapa_oportunidades_sebrae_v0"],
+      "contratos_output": ["personas_v0", "analise_mercado_v0", "mapa_oportunidades_sebrae_v0"]
+    },
+    {
+      "id": "shield",
+      "nome": "Shield",
+      "camada": "core",
+      "papel": "gestao_riscos",
+      "inputs": ["pacote_diagnostico_v0", "canvas_v0", "analise_mercado_v0"],
+      "outputs": ["swot_v0", "matriz_riscos_v0"],
+      "contratos_output": ["swot_v0", "matriz_riscos_v0"]
+    },
+    {
+      "id": "synthesis",
+      "nome": "Synthesis",
+      "camada": "consolidacao",
+      "papel": "integracao_diagnostica",
+      "inputs": ["pacote_diagnostico_v0", "canvas_v0", "personas_v0", "analise_mercado_v0", "mapa_oportunidades_sebrae_v0", "swot_v0", "matriz_riscos_v0"],
+      "outputs": ["pacote_consolidado_estrategico_v0"],
+      "contratos_output": ["pacote_consolidado_estrategico_v0"]
+    },
+    {
+      "id": "scribe",
+      "nome": "Scribe",
+      "camada": "output",
+      "papel": "documentacao_plano_executivo",
+      "inputs": ["pacote_consolidado_estrategico_v0"],
+      "outputs": ["plano_executivo_poc_v0"],
+      "contratos_output": ["plano_executivo_poc_v0"]
+    }
+  ],
+  "contratos_documentos": {
+    "relatorio_imersao_v0": {
+      "formato": "markdown",
+      "secoes_obrigatorias": ["contexto_negocio", "objetivos_estrategicos", "fase_do_negocio", "setor_segmento", "desafios_priorizados", "expectativas_cliente"]
+    },
+    "pacote_diagnostico_v0": {
+      "formato": "markdown",
+      "secoes_obrigatorias": ["resumo_executivo", "diagnostico_por_area", "insights_criticos", "dados_documentos_disponiveis", "hipoteses_a_validar"]
+    },
+    "canvas_v0": {
+      "formato": "markdown",
+      "secoes_obrigatorias": ["segmentos_clientes", "proposta_valor", "canais", "relacionamento_clientes", "fontes_receita", "recursos_chave", "atividades_chave", "parcerias_chave", "estrutura_custos"]
+    },
+    "personas_v0": {
+      "formato": "markdown",
+      "secoes_obrigatorias": ["lista_personas", "perfil_demografico", "dor_principal", "objetivos", "comportamento_compra"]
+    },
+    "analise_mercado_v0": {
+      "formato": "markdown",
+      "secoes_obrigatorias": ["tamanho_mercado_estimado", "tendencias_relevantes", "concorrentes_principais", "posicionamento_sugerido"]
+    },
+    "mapa_oportunidades_sebrae_v0": {
+      "formato": "markdown",
+      "secoes_obrigatorias": ["individuo", "mercado", "negocio", "sintese_oportunidades"]
+    },
+    "swot_v0": {
+      "formato": "markdown",
+      "secoes_obrigatorias": ["forcas", "fraquezas", "oportunidades", "ameacas"]
+    },
+    "matriz_riscos_v0": {
+      "formato": "markdown",
+      "secoes_obrigatorias": ["lista_riscos", "classificacao_probabilidade", "classificacao_impacto", "nivel_risco", "acoes_mitigacao"]
+    },
+    "pacote_consolidado_estrategico_v0": {
+      "formato": "markdown",
+      "secoes_obrigatorias": ["resumo_executivo", "sintese_diagnostico", "proposta_estrategica", "prioridades_acao", "indicadores_sucesso_qualitativos"]
+    },
+    "plano_executivo_poc_v0": {
+      "formato": "markdown",
+      "secoes_obrigatorias": ["sumario_executivo", "contexto_e_diagnostico", "modelo_negocio", "mercado_e_personas", "analise_swot_e_riscos", "plano_de_acao_12_meses", "proximos_passos_consultoria"]
+    }
+  },
+  "fluxos": [
+    {
+      "id": "fluxo_poc_padrao",
+      "descricao": "Fluxo unico da POC da imersao ao plano executivo",
+      "sequencia_agentes": ["theron", "lyric", "nexis", "scout", "shield", "synthesis", "scribe"],
+      "paralelismo": {
+        "posicoes": [
+          {
+            "ordem": 3,
+            "agentes_paralelos": ["nexis", "scout"]
+          }
+        ]
+      }
+    }
+  ]
+}
