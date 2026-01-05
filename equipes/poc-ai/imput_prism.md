@@ -41,4 +41,17 @@ Não há paralelismo, roteamento condicional ou workflows de longa duração. O 
 
 ### Fluxo linear
 
+Spectrum
+↓ (especificacao_poc.json)
+Prism
+↓ (project_structure.json)
+Schema
+↓ (contracts_references.json)
+Synapse
+↓ (orchestration_artifacts.json)
+Sentinel
+↓ (relatorio_issues.json)
+Ryse
+↓ (prompts_otimizados/, learnings.md)
+
 
