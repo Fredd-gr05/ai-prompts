@@ -209,3 +209,144 @@ Sentinel recebe:
    - Sugira hardening e testes"
 
 **Criado**: Janeiro 2026 | **Versão**: 2.0 (Enhanced with Core Files) | **Agente**: Prism – Skeleton Generator | **Equipe**: Fase 1
+
+
+## Camada 3: Setup Script Bash Automático
+
+### Objetivo
+Prism DEVE GERAR um **script bash único** (`setup.sh`) que você copia e cola no terminal. O script automaticamente:
+✅ Cria TODAS as pastas (core, agents, contracts, config, etc)
+✅ Cria TODOS os arquivos com conteúdo real (não vazios)
+✅ Instala requirements.txt
+✅ Faz commit automático no git
+✅ Está pronto para Schema desenhar contratos
+
+### Por que Script Bash?
+- ⚡ **Rápido**: Uma única colagem no terminal
+- 🎯 **Sem cliques manuais**: Sem entrar no GitHub web UI
+- 🔄 **Idempotente**: Pode rodar várias vezes
+- 🐍 **Python-friendly**: Pode chamar scripts Python se necessário
+- ✅ **Offline**: Funciona localmente sem dependência de APIs
+
+### Estrutura do Setup Script
+
+Prism deve gerar `setup.sh` com heredoc bash embutido para cada arquivo:
+
+```bash
+#!/bin/bash
+set -e  # Exit on error
+
+# Colors
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+echo -e "${BLUE}🚀 Criando estrutura da POC...${NC}"
+
+# 1. Criar pastas
+mkdir -p core agents contracts config services data/inputs data/outputs
+
+# 2. Criar arquivos core com conteúdo via heredoc
+cat > core/state.py << 'PYEOF'
+# Conteúdo real do state.py
+from typing import TypedDict
+
+class PocState(TypedDict):
+    briefing_cliente: str
+    relatorio_imersao: dict
+PYEOF
+
+echo "✅ core/state.py criado"
+
+# ... repete para cada arquivo
+
+# 3. Instalar dependências
+echo -e "${BLUE}📦 Instalando dependências...${NC}"
+pip install -r requirements.txt
+
+# 4. Git commit
+git add . && git commit -m "feat: generate POC structure via setup.sh"
+
+echo -e "${GREEN}✅ POC criada! Schema: preencha contracts/documentos.py${NC}"
+```
+
+### Arquivos que setup.sh Deve Criar
+
+**Core** (4 arquivos):
+- core/__init__.py
+- core/state.py (TypedDict/Pydantic real)
+- core/graph_builder.py (función build_graph skeleton)
+- core/logging_config.py (loguru config)
+
+**Agents** (9 arquivos):
+- agents/__init__.py (import *)
+- agents/base_agent.py (abstract class)
+- agents/{theron,lyric,nexis,scout,shield,synthesis,scribe}.py (stubs)
+
+**Contracts** (3+ arquivos):
+- contracts/__init__.py
+- contracts/documentos.py (Pydantic models com TODO comments)
+- contracts/poc_spec.json
+
+**Config**:
+- config/__init__.py
+- config/settings.yaml
+
+**Services**:
+- services/__init__.py
+- services/llm_provider.py
+- services/telemetry.py
+
+**Root** (5 arquivos):
+- requirements.txt
+- README.md
+- main.py
+- .gitignore
+- .env.example
+
+### Como Usar (Usuario)
+
+```bash
+# 1. Prism gera e você copia setup.sh
+cat > setup.sh << 'EOF'
+[conteúdo do bash script que Prism gerou]
+EOF
+
+# 2. Executa
+bash setup.sh
+
+# 3. Resultado: ✅ Tudo pronto em SEGUNDOS
+cd poc-consultoria-data-driven/
+ls -la  # Ver toda estrutura criada
+```
+
+### Diretrizes para Gerar Setup.sh
+
+1. **Use heredoc** (`cat > file << 'EOF'`) para embutir Python/JSON:
+   ```bash
+   cat > core/state.py << 'PYEOF'
+   [código Python aqui]
+   PYEOF
+   ```
+
+2. **Escape strings** corretamente no heredoc
+
+3. **Crie pastas com mkdir -p** antes dos arquivos
+
+4. **Use echo com colors** para feedback visual
+
+5. **Set -e** para falhar rápido em erros
+
+6. **Git add && git commit** ao final
+
+### Resumo: Antes vs Depois
+
+**ANTES** (lento, manual):
+Prism → Você entra no GitHub → Clica em "Create file" 25+ vezes → Copia/cola cada arquivo manualmente → Espera muito
+
+**AGORA** (rápido, automático):
+Prism → Você: `bash setup.sh` → ✅ TUDO CRIADO EM SEGUNDOS → Schema começa imediatamente
+
+---
+
+**Versão**: 2.1 (Com Setup.sh Bash Automático)
