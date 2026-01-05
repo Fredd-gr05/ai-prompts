@@ -1,0 +1,232 @@
+{
+  "poc_id": "cenario_A_POC_simples",
+  "descricao_geral": "POC linear com 6 agentes (Spectrum, Prism, Schema, Synapse, Sentinel, Ryse) orquestrados via CrewAI para validar handoffs e contratos básicos.",
+  "stack_referencia": {
+    "orquestracao": "CrewAI",
+    "frameworks_suporte": ["Python 3.11+", "Pydantic", "LangChain (apoio)"],
+    "restricoes": [
+      "Sem paralelismo",
+      "Sem rotas condicionais complexas",
+      "Sem integrações externas de produção"
+    ]
+  },
+  "sequence": [
+    "Spectrum",
+    "Prism",
+    "Schema",
+    "Synapse",
+    "Sentinel",
+    "Ryse"
+  ],
+  "agent_nodes": [
+    {
+      "id": "Spectrum",
+      "role": "Scope Designer + Requirements Architect",
+      "descricao": "Transforma briefing vago em especificacao tecnica estruturada de POC.",
+      "entry_function": "agents.spectrum.run",
+      "input_schema_ref": {
+        "type": "object",
+        "required": ["briefing_text"],
+        "properties": {
+          "briefing_text": { "type": "string" },
+          "contexto_cliente": { "type": "string" },
+          "restricoes_negocio": { "type": "string" }
+        }
+      },
+      "output_schema_ref": {
+        "ref": "contracts/json_schemas/especificacao_poc.json"
+      }
+    },
+    {
+      "id": "Prism",
+      "role": "Skeleton Generator + Core Implementation",
+      "descricao": "Gera estrutura de projeto, arquivos core e stubs de agentes.",
+      "entry_function": "agents.prism.run",
+      "input_schema_ref": {
+        "ref": "contracts/json_schemas/especificacao_poc.json"
+      },
+      "output_schema_ref": {
+        "type": "object",
+        "properties": {
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["path", "kind"],
+              "properties": {
+                "path": { "type": "string" },
+                "kind": { "type": "string", "enum": ["code", "config", "doc"] },
+                "description": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "Schema",
+      "role": "Agent Contract Designer",
+      "descricao": "Define contratos de dados, Pydantic models e JSON Schemas.",
+      "entry_function": "agents.schema.run",
+      "input_schema_ref": {
+        "type": "object",
+        "properties": {
+          "state_module": { "type": "string", "const": "core/state.py" },
+          "graph_module": { "type": "string", "const": "core/graph_builder.py" },
+          "agents_dir": { "type": "string", "const": "agents/" }
+        }
+      },
+      "output_schema_ref": {
+        "type": "object",
+        "properties": {
+          "pydantic_models": { "type": "string", "const": "contracts/documentos.py" },
+          "json_schemas_dir": { "type": "string", "const": "contracts/json_schemas/" },
+          "matriz_contratos": { "type": "string", "const": "contratos_matriz.md" }
+        }
+      }
+    },
+    {
+      "id": "Synapse",
+      "role": "Flow Orchestrator",
+      "descricao": "Implementa orquestracao concreta, validacao e observabilidade basica.",
+      "entry_function": "agents.synapse.run",
+      "input_schema_ref": {
+        "type": "object",
+        "properties": {
+          "skeleton_graph": { "type": "string", "const": "core/graph_builder.py" },
+          "contracts_module": { "type": "string", "const": "contracts/documentos.py" },
+          "json_schemas_dir": { "type": "string", "const": "contracts/json_schemas/" }
+        }
+      },
+      "output_schema_ref": {
+        "type": "object",
+        "properties": {
+          "graph_builder": { "type": "string", "const": "core/graph_builder.py" },
+          "execution_manager": { "type": "string", "const": "services/execution_manager.py" },
+          "validation_engine": { "type": "string", "const": "services/validation_engine.py" },
+          "telemetry": { "type": "string", "const": "services/telemetry.py" }
+        }
+      }
+    },
+    {
+      "id": "Sentinel",
+      "role": "Code Review Architect",
+      "descricao": "Revisa robustez, seguranca, testes e conformidade com especificacao.",
+      "entry_function": "agents.sentinel.run",
+      "input_schema_ref": {
+        "type": "object",
+        "properties": {
+          "projeto_dir": { "type": "string" },
+          "graph_builder": { "type": "string", "const": "core/graph_builder.py" }
+        }
+      },
+      "output_schema_ref": {
+        "type": "object",
+        "properties": {
+          "relatorio_issues": { "type": "string", "const": "reports/relatorio_issues.json" },
+          "test_resilience": { "type": "string", "const": "tests/test_execution_resilience.py" },
+          "security_checks": { "type": "string", "const": "tests/security_checks.py" },
+          "recomendacoes_ryse": { "type": "string" }
+        }
+      }
+    },
+    {
+      "id": "Ryse",
+      "role": "Prompt Optimizer + Feedback Loop",
+      "descricao": "Analisa qualidade dos outputs e otimiza prompts com base em feedback e metricas.",
+      "entry_function": "agents.ryse.run",
+      "input_schema_ref": {
+        "type": "object",
+        "properties": {
+          "relatorio_issues": { "type": "string", "const": "reports/relatorio_issues.json" },
+          "amostras_execucao": { "type": "array", "items": { "type": "object" } }
+        }
+      },
+      "output_schema_ref": {
+        "type": "object",
+        "properties": {
+          "prompts_otimizados_dir": { "type": "string", "const": "prompts_otimizados/" },
+          "learnings": { "type": "string", "const": "learnings.md" },
+          "ajustes_especificacao": { "type": "string" }
+        }
+      }
+    }
+  ],
+  "handoff_edges": [
+    {
+      "from_agent": "Spectrum",
+      "to_agent": "Prism",
+      "gatilho": "especificacao_poc_json_gerada",
+      "priority_flag": "critico",
+      "output_paths": ["contracts/json_schemas/especificacao_poc.json"],
+      "contracts_ref": "contracts/json_schemas/especificacao_poc.json"
+    },
+    {
+      "from_agent": "Prism",
+      "to_agent": "Schema",
+      "gatilho": "skeleton_gerado",
+      "priority_flag": "alto",
+      "output_paths": [
+        "core/state.py",
+        "core/graph_builder.py",
+        "agents/"
+      ],
+      "contracts_ref": null
+    },
+    {
+      "from_agent": "Schema",
+      "to_agent": "Synapse",
+      "gatilho": "contratos_gerados",
+      "priority_flag": "alto",
+      "output_paths": [
+        "contracts/documentos.py",
+        "contracts/json_schemas/",
+        "contratos_matriz.md"
+      ],
+      "contracts_ref": "contracts/json_schemas/"
+    },
+    {
+      "from_agent": "Synapse",
+      "to_agent": "Sentinel",
+      "gatilho": "servicos_execucao_disponiveis",
+      "priority_flag": "alto",
+      "output_paths": [
+        "core/graph_builder.py",
+        "services/execution_manager.py",
+        "services/validation_engine.py",
+        "services/telemetry.py"
+      ],
+      "contracts_ref": null
+    },
+    {
+      "from_agent": "Sentinel",
+      "to_agent": "Ryse",
+      "gatilho": "relatorio_issues_disponivel",
+      "priority_flag": "alto",
+      "output_paths": [
+        "reports/relatorio_issues.json",
+        "tests/test_execution_resilience.py",
+        "tests/security_checks.py"
+      ],
+      "contracts_ref": "reports/relatorio_issues.json"
+    }
+  ],
+  "orientacoes_implementacao_crewai": {
+    "crew_module": "crew.py",
+    "crew_class": "PocCrew",
+    "agents_mapping": {
+      "Spectrum": "ScopeDesignerAgent",
+      "Prism": "SkeletonGeneratorAgent",
+      "Schema": "ContractDesignerAgent",
+      "Synapse": "FlowOrchestratorAgent",
+      "Sentinel": "CodeReviewAgent",
+      "Ryse": "PromptOptimizerAgent"
+    },
+    "execution_flow": "linear",
+    "observabilidade_minima": {
+      "log_level": "INFO",
+      "traces": true,
+      "log_outputs": ["stdout", "logs/crew_run.log"]
+    }
+  }
+}
