@@ -42,4 +42,3 @@ Revise código gerado, gere `reports/relatorio_issues.json` com issues de segura
 **Ryse:**  
 Otimize prompts baseados em `relatorio_issues`, gere `prompts_otimizados/` e `learnings.md` com 3 lições principais.
 
-Aguardando seu OK para gerar o `especificacao_poc.json` processável.
