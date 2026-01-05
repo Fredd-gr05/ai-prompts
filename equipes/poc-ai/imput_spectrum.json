@@ -1,0 +1,178 @@
+{
+  "resumo_decisoes": {
+    "fonte_verdade_fluxo": "team_poc.md",
+    "padrao_nomes_agentes": ["Spectrum", "Prism", "Schema", "Synapse", "Sentinel", "Ryse"],
+    "ajuste_TEAM_HANDOFFS": "alinhar nomes, incluir caminho de artefatos, adicionar Ryse->Spectrum",
+    "padronizacao_contratos": "todo handoff com input_schema e output_schema bem definidos",
+    "cenarios_fluxo": ["A_POC_simples", "B_POC_orquestracao_moderada", "C_POC_avancada_longa_duracao"]
+  },
+  "assistentes_atualizados": [
+    {
+      "id": "Spectrum",
+      "role": "Scope Designer + Requirements Architect",
+      "descricao": "Transforma briefing vago em especificacao tecnica estruturada de POC.",
+      "input_schema": {
+        "type": "object",
+        "required": ["briefing_text"],
+        "properties": {
+          "briefing_text": { "type": "string" },
+          "contexto_cliente": { "type": "string" },
+          "restricoes_negocio": { "type": "string" }
+        }
+      },
+      "output_schema": {
+        "ref": "especificacao_poc.json"
+      }
+    },
+    {
+      "id": "Prism",
+      "role": "Skeleton Generator + Core Implementation",
+      "descricao": "Gera estrutura de projeto, arquivos core e stubs de agentes.",
+      "input_schema": {
+        "ref": "especificacao_poc.json"
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["path", "kind"],
+              "properties": {
+                "path": { "type": "string" },
+                "kind": { "type": "string", "enum": ["code", "config", "doc"] },
+                "description": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "Schema",
+      "role": "Agent Contract Designer",
+      "descricao": "Define contratos de dados, Pydantic models e JSON Schemas.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "state_module": { "type": "string", "const": "core/state.py" },
+          "graph_module": { "type": "string", "const": "core/graph_builder.py" },
+          "agents_dir": { "type": "string", "const": "agents/" }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "pydantic_models": { "type": "string", "const": "contracts/documentos.py" },
+          "json_schemas_dir": { "type": "string", "const": "contracts/json_schemas/" },
+          "matriz_contratos": { "type": "string", "const": "contratos_matriz.md" }
+        }
+      }
+    },
+    {
+      "id": "Synapse",
+      "role": "Flow Orchestrator",
+      "descricao": "Implementa orquestracao concreta, paralelismo, retry/fallback e observabilidade.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "skeleton_graph": { "type": "string", "const": "core/graph_builder.py" },
+          "contracts_module": { "type": "string", "const": "contracts/documentos.py" },
+          "json_schemas_dir": { "type": "string", "const": "contracts/json_schemas/" }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "graph_builder": { "type": "string", "const": "core/graph_builder.py" },
+          "execution_manager": { "type": "string", "const": "services/execution_manager.py" },
+          "validation_engine": { "type": "string", "const": "services/validation_engine.py" },
+          "telemetry": { "type": "string", "const": "services/telemetry.py" }
+        }
+      }
+    },
+    {
+      "id": "Sentinel",
+      "role": "Code Review Architect",
+      "descricao": "Revisa robustez, seguranca, testes e conformidade com especificacao.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "projeto_dir": { "type": "string" },
+          "graph_builder": { "type": "string", "const": "core/graph_builder.py" }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "relatorio_issues": { "type": "string", "const": "reports/relatorio_issues.json" },
+          "test_resilience": { "type": "string", "const": "tests/test_execution_resilience.py" },
+          "security_checks": { "type": "string", "const": "tests/security_checks.py" },
+          "recomendacoes_ryse": { "type": "string" }
+        }
+      }
+    },
+    {
+      "id": "Ryse",
+      "role": "Prompt Optimizer + Feedback Loop",
+      "descricao": "Analisa qualidade dos outputs e otimiza prompts com base em feedback e metricas.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "relatorio_issues": { "type": "string", "const": "reports/relatorio_issues.json" },
+          "amostras_execucao": { "type": "array", "items": { "type": "object" } }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "prompts_otimizados_dir": { "type": "string", "const": "prompts_otimizados/" },
+          "learnings": { "type": "string", "const": "learnings.md" },
+          "ajustes_especificacao": { "type": "string" }
+        }
+      }
+    }
+  ],
+  "novos_assistentes_sugeridos": [],
+  "fluxos_atualizados": {
+    "cenario_A_POC_simples": {
+      "description": "Fluxo linear para POCs com poucos agentes e baixa complexidade de orquestracao.",
+      "sequence": ["Spectrum", "Prism", "Schema", "Synapse", "Sentinel", "Ryse"]
+    },
+    "cenario_B_POC_orquestracao_moderada": {
+      "description": "Fluxo com paralelismo moderado e maior foco em Synapse.",
+      "sequence": ["Spectrum", "Prism", "Schema", "Synapse", "Sentinel", "Ryse"],
+      "features": ["parallel_nodes", "retry_policies", "validation_on_each_edge"]
+    },
+    "cenario_C_POC_avancada_longa_duracao": {
+      "description": "Fluxo para workflows longos, integrando motores como Temporal.",
+      "sequence": ["Spectrum", "Prism", "Schema", "Synapse", "Sentinel", "Ryse"],
+      "features": ["long_running_workflows", "signals_timers", "advanced_observability"]
+    }
+  },
+  "orientacoes_para_gateway_codigo": {
+    "fonte_arquitetura": "team_poc.md",
+    "fonte_handoffs": "TEAM_HANDOFFS.json (ajustado para nomes e caminhos corretos)",
+    "modelo_mapeamento": {
+      "agent_node": {
+        "id": "Nome exato do agente",
+        "role": "Resumo do papel",
+        "input_schema_ref": "referencia a schema JSON ou modulo",
+        "output_schema_ref": "referencia a schema JSON ou modulo",
+        "entry_function": "funcao Python que executa o agente"
+      },
+      "handoff_edge": {
+        "from_agent": "Spectrum|Prism|Schema|Synapse|Sentinel|Ryse",
+        "to_agent": "Spectrum|Prism|Schema|Synapse|Sentinel|Ryse",
+        "gatilho": "condicao de transicao",
+        "priority_flag": "critico|alto|medio|baixo",
+        "output_paths": ["lista de arquivos/dirs produzidos"],
+        "contracts_ref": "quando aplicavel, referencia a JSON Schema"
+      }
+    },
+    "implementacao_CrewAI": "Cada agent_node vira uma Task/Agent, handoff_edge define ordem e dependencias.",
+    "implementacao_LangGraph": "agent_nodes viram nos do DAG, handoff_edges viram edges condicionais; schemas sao usados para validacao de estado.",
+    "implementacao_LangChain": "Fluxos lineares como cadeias; desvios/routers mapeados a partir de contratos e gatilhos."
+  }
+}
