@@ -1,0 +1,70 @@
+{
+  "team_handoffs": [
+    {
+      "from_agent": "Spectrum",
+      "to_agent": "Prism",
+      "trigger": "Requirement specification complete",
+      "output_format": "Detailed specifications document",
+      "key_data": [
+        "Requirements overview",
+        "Functional specifications",
+        "Technical constraints",
+        "Scope boundaries"
+      ]
+    },
+    {
+      "from_agent": "Prism",
+      "to_agent": "Schema",
+      "trigger": "Architecture base generated",
+      "output_format": "Code folder structure with base files",
+      "key_data": [
+        "Project structure",
+        "Base implementation files",
+        "Configuration templates",
+        "Dependencies list"
+      ]
+    },
+    {
+      "from_agent": "Schema",
+      "to_agent": "Synapse",
+      "trigger": "Data contracts defined",
+      "output_format": "JSON schema definitions and contracts",
+      "key_data": [
+        "API contract specifications",
+        "Data model definitions",
+        "Interface contracts",
+        "Integration points"
+      ]
+    },
+    {
+      "from_agent": "Synapse",
+      "to_agent": "Sentinel",
+      "trigger": "Integration orchestration complete",
+      "output_format": "Integrated system architecture",
+      "key_data": [
+        "System flow diagrams",
+        "Integration mappings",
+        "Orchestration rules",
+        "Communication patterns"
+      ]
+    },
+    {
+      "from_agent": "Sentinel",
+      "to_agent": "Spectrum",
+      "trigger": "Quality assurance and review complete",
+      "output_format": "Review findings and recommendations",
+      "key_data": [
+        "Architecture review notes",
+        "Quality improvements",
+        "Risk assessments",
+        "Optimization suggestions"
+      ]
+    }
+  ],
+  "handoff_protocol": {
+    "communication_format": "JSON with context preservation",
+    "priority_flags": ["critical", "high", "medium", "low"],
+    "retry_mechanism": "Up to 3 attempts with escalation",
+    "timeout": "5 minutes per handoff"
+  }
+}
