@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "EspecificacaoPOC",
+  "type": "object",
+  "description": "TODO (Schema): especializar campos deste schema conforme imput_prism.json.",
+  "properties": {
+    "sequence_A": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}
