@@ -21,7 +21,7 @@ jobs:
         run: bash equipes/poc-ai/setup_poc_prism.sh
       
       - name: Upload generated files
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: poc-prism-project
           path: poc_prism_project/
