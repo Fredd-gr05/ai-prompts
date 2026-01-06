@@ -204,5 +204,265 @@ Ryse retorna:
 **Versao**: 2.0 (Com suporte a geracao de Agent CrewAI)  
 **Autores**: Arquitetura de Agentes IA, Integracao Lyra + Ryse
 
+## V3.0 - Arquitetura Hibrida: CrewAI + LangChain Unificados
+
+### Visao Geral da Estrategia Hibrida
+
+Ryse agora gera configuracoes **unicas e flexiveis** que suportam tanto CrewAI quanto LangChain a partir da mesma base de dados.
+
+**Problema resolvido**: Evita duplicacao de configs enquanto permite especializacoes por plataforma.
+
+### Tabela Supabase Unificada: agent_configs (Hybrid)
+
+```sql
+CREATE TABLE agent_configs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  poc_id UUID REFERENCES pocs(id),
+  
+  -- IDENTIFICACAO
+  agent_name TEXT NOT NULL UNIQUE,
+  agent_type TEXT NOT NULL CHECK (agent_type IN ('crewai', 'langchain', 'hybrid')),
+  
+  -- ===== CAMPOS UNIVERSAIS (usados por ambos) =====
+  role TEXT NOT NULL,
+  goal TEXT NOT NULL,
+  description TEXT,
+  
+  -- Modelo e Parametros Base
+  llm_model TEXT DEFAULT 'gpt-4.1',
+  model_config JSONB DEFAULT '{"temperature": 0.7, "max_tokens": 2048}'::jsonb,
+  
+  -- Execucao
+  max_iterations INT DEFAULT 20,
+  max_execution_time INT DEFAULT 300,
+  max_retry_limit INT DEFAULT 2,
+  verbose BOOLEAN DEFAULT true,
+  
+  -- Ferramentas
+  tools JSONB DEFAULT '[]'::jsonb, -- ["tool_name_1", "tool_name_2"]
+  
+  -- Prompts
+  system_prompt TEXT,
+  user_prompt_template TEXT,
+  output_format TEXT DEFAULT 'text', -- 'text', 'json', 'structured'
+  
+  -- ===== CONFIGS ESPECIFICAS POR TIPO =====
+  type_specific_config JSONB NOT NULL,
+  -- Para CrewAI: {backstory, cache, allow_delegation, reasoning, ...}
+  -- Para LangChain: {memory_type, agent_type, parser_type, callbacks, ...}
+  -- Para Hybrid: ambos os campos (permite usar em qualquer plataforma)
+  
+  -- ===== VALIDACOES E CONTROLE =====
+  enabled_for_crewai BOOLEAN DEFAULT true,
+  enabled_for_langchain BOOLEAN DEFAULT true,
+  
+  version INT DEFAULT 1,
+  created_by TEXT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  status TEXT DEFAULT 'draft', -- draft, active, archived, testing
+  notes TEXT,
+  
+  CONSTRAINT check_type_specific_not_empty CHECK (type_specific_config != 'null'::jsonb)
+);
+
+-- INDEX
+CREATE INDEX idx_agent_configs_poc_type ON agent_configs(poc_id, agent_type);
+CREATE INDEX idx_agent_configs_enabled ON agent_configs(enabled_for_crewai, enabled_for_langchain);
+```
+
+### Estrutura de Output do Ryse (JSON Hibrido)
+
+```json
+{
+  "agent_config": {
+    "agent_name": "schema_validator",
+    "agent_type": "hybrid",
+    "role": "Validador de Schemas JSON para contratos",
+    "goal": "Validar estrutura e integridade de JSON em tempo real",
+    "description": "Agente especializado em validacao de dados estruturados",
+    
+    "llm_model": "gpt-4o-mini",
+    "model_config": {
+      "temperature": 0.3,
+      "max_tokens": 1024,
+      "top_p": 0.95
+    },
+    
+    "max_iterations": 8,
+    "max_execution_time": 60,
+    "max_retry_limit": 2,
+    "verbose": true,
+    
+    "tools": ["json_validator_tool", "supabase_write_tool"],
+    
+    "system_prompt": "Voce eh um especialista em validacao de dados e schemas JSON...",
+    "user_prompt_template": "Valide este JSON contra o schema: {schema}\\nDados: {data}",
+    "output_format": "json",
+    
+    "type_specific_config": {
+      "crewai": {
+        "backstory": "Engenheiro de qualidade obsessivo por integridade de dados...",
+        "cache": true,
+        "allow_delegation": false,
+        "reasoning": false,
+        "allow_code_execution": false,
+        "respect_context_window": true
+      },
+      "langchain": {
+        "agent_type": "tool_calling",
+        "memory_type": "buffer",
+        "memory_max_size": 10,
+        "parser_type": "json",
+        "callbacks": ["langsmith"],
+        "early_stopping_method": "force"
+      }
+    },
+    
+    "enabled_for_crewai": true,
+    "enabled_for_langchain": true,
+    
+    "rationale": {
+      "llm_selection": "Modelo mini para velocidade e custo em validacoes repetidas",
+      "temperature": "0.3 para determinismo total (tarefa objetiva)",
+      "max_iterations_crewai": "8 loops suficientes para validacao simples",
+      "memory_langchain": "Buffer simples, sem historico complexo",
+      "parser_langchain": "JSON parser para estruturar resposta"
+    }
+  },
+  
+  "backend_implementation_tips": {
+    "crewai_instantiation": "Create Agent() usando campos universais + crewai sub-config",
+    "langchain_instantiation": "Create LLMChain + AgentExecutor usando universal + langchain sub-config",
+    "database_save": "INSERT INTO agent_configs com type_specific_config como JSONB"
+  }
+}
+```
+
+### Fluxo de Criacao (Lyra → Ryse → Backend)
+
+1. **Lyra coleta requisitos**: "Preciso validador de schemas, deve ser rapido, low-cost"
+2. **Lyra encaminha para Ryse com brief**: tipo (crewai, langchain, ou hybrid), restricoes, use case
+3. **Ryse gera config hibrida**: JSON com campos universais + type_specific_config para ambos
+4. **App exibe no Stitch**: Abas (Identidade, Modelo, Execucao, CrewAI-specific, LangChain-specific)
+5. **Usuario refina**: Pode ajustar qualquer campo, salva no Supabase
+6. **Backend instancia**: 
+   - Se usa CrewAI: extrai config universal + crewai sub-config → Agent()
+   - Se usa LangChain: extrai config universal + langchain sub-config → LLMChain() + AgentExecutor()
+   - Se hybrid: salva ambas instancias com mesmo agent_config_id
+
+### Exemplo Pratico: Backend Python
+
+```python
+# Buscar config do Supabase
+config_data = supabase.table('agent_configs')\
+    .select('*')\
+    .eq('agent_name', 'schema_validator')\
+    .single()\
+    .execute()
+
+config = config_data.data
+
+# ===== INSTANCIAR PARA CREWAI =====
+if config['enabled_for_crewai']:
+    crewai_config = config['type_specific_config']['crewai']
+    
+    agent = Agent(
+        role=config['role'],
+        goal=config['goal'],
+        backstory=crewai_config['backstory'],
+        llm=ChatOpenAI(model=config['llm_model'], **config['model_config']),
+        tools=[get_tool(t) for t in config['tools']],
+        max_iter=config['max_iterations'],
+        max_execution_time=config['max_execution_time'],
+        cache=crewai_config['cache'],
+        reasoning=crewai_config['reasoning'],
+        verbose=config['verbose'],
+    )
+
+# ===== INSTANCIAR PARA LANGCHAIN =====
+if config['enabled_for_langchain']:
+    lc_config = config['type_specific_config']['langchain']
+    
+    llm = ChatOpenAI(model=config['llm_model'], **config['model_config'])
+    
+    prompt = ChatPromptTemplate.from_messages([
+        ('system', config['system_prompt']),
+        ('human', config['user_prompt_template']),
+    ])
+    
+    tools = [get_tool(t) for t in config['tools']]
+    
+    agent = create_tool_calling_agent(llm=llm, tools=tools, prompt=prompt)
+    
+    agent_executor = AgentExecutor(
+        agent=agent,
+        tools=tools,
+        max_iterations=config['max_iterations'],
+        max_execution_time=config['max_execution_time'],
+        verbose=config['verbose'],
+        early_stopping_method=lc_config['early_stopping_method'],
+    )
+
+# ===== USAR PARSER JSON (LANGCHAIN) =====
+if lc_config['parser_type'] == 'json':
+    from langchain.output_parsers import JSONOutputParser
+    parser = JSONOutputParser()
+    chain = prompt | llm | parser
+```
+
+### Matriz de Decisao: Qual agent_type escolher?
+
+| Cenario | agent_type | Motivo |
+|---------|-----------|--------|
+| Agente so para CrewAI | `crewai` | Menos fields vazios, query rapida |
+| Agente so para LangChain | `langchain` | Menos fields vazios, especializacao |
+| Agente usa ambas, mesma config | `hybrid` | Uma unica config, salva duplicacao |
+| Agente pode migrar entre plataformas | `hybrid` | Facilita A/B testing e migracao |
+| MVP com futuro incerto | `hybrid` | Maxima flexibilidade |
+
+### Vantagens da Abordagem Hibrida
+
+✅ **Campos universais em colunas nativas**: Queries rápidas para `role`, `goal`, `llm_model`  
+✅ **Flexibilidade com JSONB**: `type_specific_config` guarda especializacoes  
+✅ **Sem duplicacao**: Um agente, uma linha no Supabase  
+✅ **Facil migra cao**: Mesmo config, troca de plataforma  
+✅ **Type-safe no backend**: RPC Supabase valida config de acordo com `agent_type`  
+✅ **Escalavel**: Fácil adicionar 3ª plataforma (ex: Vertex AI) sem migration  
+✅ **UI simplificada**: Um formulario com abas por plataforma  
+
+### Validacoes Recomendadas (RPC Supabase)
+
+```sql
+-- RPC: validar_agent_config
+CREATE FUNCTION validar_agent_config(config_json JSONB, agent_type TEXT)
+RETURNS BOOLEAN AS $$
+BEGIN
+  -- CrewAI deve ter backstory
+  IF agent_type IN ('crewai', 'hybrid') THEN
+    IF config_json->'crewai'->>'backstory' IS NULL THEN
+      RAISE EXCEPTION 'CrewAI requer backstory em type_specific_config';
+    END IF;
+  END IF;
+  
+  -- LangChain deve ter agent_type
+  IF agent_type IN ('langchain', 'hybrid') THEN
+    IF config_json->'langchain'->>'agent_type' IS NULL THEN
+      RAISE EXCEPTION 'LangChain requer agent_type em type_specific_config';
+    END IF;
+  END IF;
+  
+  RETURN TRUE;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+```
+
+---
+
+**Criado**: Janeiro 2026  
+**Versao**: 3.0 (Arquitetura Hibrida CrewAI + LangChain)  
+**Status**: Production-ready  
+**Autores**: Arquitetura de Agentes IA, Engenharia de Prompts
+
 **Criado**: Janeiro 2026
 **Versao**: 1.0
